@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>DecodeLabs · Project 3 · Interactive Elements</title>
+  <!-- clean, interactive, JS-driven UI -->
+  <style>
+    /* ----- reset & base ----- */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+      background: #f6f8fc;
+      color: #0a0e1a;
+      line-height: 1.5;
+      padding: 1rem;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    /* dark mode – toggled via JS + class */
+    body.dark-mode {
+      background: #10131f;
+      color: #e8edf5;
+    }
+
+    body.dark-mode .card,
+    body.dark-mode .nav-wrapper,
+    body.dark-mode .hero,
+    body.dark-mode .footer {
+      background: #1b1f2e;
+      border-color: #2e3444;
+      color: #e8edf5;
+    }
+
+    body.dark-mode .hero {
+      background: #0f1422;
+    }
+
+    body.dark-mode .code-block {
+      background: #0a0e1a;
+      color: #c8d0e0;
+    }
+
+    body.dark-mode .chip {
+      background: #2d3448;
+      color: #d0d9ee;
+    }
+
+    body.dark-mode .thumb-icon {
+      background: #2a3147;
+      color: #b0c4f0;
+    }
+
+    body.dark-mode .badge {
+      background: #4b5b8a;
+    }
+
+    body.dark-mode .nav-links a {
+      color: #d0d9ee;
+    }
+
+    .app {
+      max-width: 1280px;
+      margin: 0 auto;
+      width: 100%;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+
+    /* ----- typography – fluid ----- */
+    h1, h2, h3 {
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+    }
+
+    h1 { font-size: clamp(2rem, 5vw, 3.2rem); }
+    h2 { font-size: clamp(1.5rem, 3.5vw, 2.4rem); }
+    h3 { font-size: clamp(1.2rem, 2.5vw, 1.6rem); }
+
+    p, li {
+      font-size: clamp(1rem, 1.2vw, 1.2rem);
+      max-width: 70ch;
+    }
+
+    .text-muted { color: #4a4a5a; }
+    body.dark-mode .text-muted { color: #9aa4bb; }
+
+    /* ----- components ----- */
+    .hero {
+      background: #0f172a;
+      color: #f0f3fa;
+      padding: 2rem 1.5rem;
+      border-radius: 2rem;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem 0.5rem;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+      transition: background 0.2s;
+    }
+
+    .hero h1 { color: white; margin-bottom: 0; }
+
+    .badge {
+      background: #3b82f6;
+      padding: 0.4rem 1.2rem;
+      border-radius: 40px;
+      font-weight: 500;
+      font-size: clamp(0.8rem, 1.2vw, 1rem);
+      color: white;
+      white-space: nowrap;
+    }
+
+    .nav-wrapper {
+      background: white;
+      border-radius: 2rem;
+      padding: 0.75rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      transition: background 0.2s, border-color 0.2s;
+      border: 1px solid transparent;
+    }
+
+    .logo {
+      font-weight: 600;
+      font-size: 1.2rem;
+      letter-spacing: -0.3px;
+    }
+
+    .logo span {
+      background: #0f172a;
+      color: white;
+      padding: 0.1rem 0.6rem;
+      border-radius: 30px;
+      font-size: 0.8rem;
+      margin-left: 0.3rem;
+    }
+    body.dark-mode .logo span { background: #3b4b7a; }
+
+    .nav-links {
+      display: flex;
+      gap: 1.8rem;
+      align-items: center;
+      list-style: none;
+    }
+    .nav-links a {
+      text-decoration: none;
+      color: #1e1e2a;
+      font-weight: 500;
+      font-size: 0.95rem;
+      padding: 0.3rem 0;
+      border-bottom: 2px solid transparent;
+      transition: 0.15s;
+    }
+    .nav-links a:hover { border-bottom-color: #3b82f6; }
+
+    /* interactive controls */
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.8rem 1.2rem;
+      align-items: center;
+    }
+
+    .btn {
+      background: #eef2ff;
+      border: none;
+      padding: 0.5rem 1.2rem;
+      border-radius: 40px;
+      font-weight: 500;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: 0.15s;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      touch-action: manipulation;
+      color: #0f172a;
+    }
+
+    .btn:hover { background: #dbe4ff; transform: scale(0.97); }
+    .btn-primary {
+      background: #0f172a;
+      color: white;
+    }
+    .btn-primary:hover { background: #1e2a4a; }
+
+    body.dark-mode .btn {
+      background: #2d3448;
+      color: #e8edf5;
+    }
+    body.dark-mode .btn:hover { background: #3e4660; }
+    body.dark-mode .btn-primary {
+      background: #4b5b8a;
+      color: white;
+    }
+
+    .card {
+      background: white;
+      padding: 1.8rem 1.5rem;
+      border-radius: 1.8rem;
+      border: 1px solid #f0f0f0;
+      transition: background 0.2s, border-color 0.2s;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+    }
+
+    .grid-2col {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.8rem;
+    }
+
+    .flex-row { display: flex; flex-wrap: wrap; gap: 1.2rem; align-items: center; }
+    .chip {
+      background: #eef2ff;
+      padding: 0.3rem 1rem;
+      border-radius: 30px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      transition: background 0.2s;
+    }
+
+    .code-block {
+      background: #0f172a;
+      color: #e2e8f0;
+      padding: 1rem 1.2rem;
+      border-radius: 1.2rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: clamp(0.7rem, 1.2vw, 0.95rem);
+      overflow-x: auto;
+      white-space: pre-wrap;
+      word-break: break-word;
+      margin: 0.8rem 0;
+    }
+
+    .thumb-icon {
+      background: #dbeafe;
+      width: 56px;
+      height: 56px;
+      border-radius: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      transition: background 0.2s;
+    }
+
+    .footer {
+      background: #0f172a;
+      color: #d4d8e6;
+      padding: 2rem 1.5rem;
+      border-radius: 2rem;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      transition: background 0.2s;
+    }
+    .footer a { color: #a5b4fc; text-decoration: none; }
+    .footer .contact { display: flex; gap: 1rem 2rem; flex-wrap: wrap; }
+
+    /* interactive demo area */
+    .interactive-zone {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+      align-items: center;
+      margin-top: 0.5rem;
+    }
+
+    .counter-box {
+      background: #f1f5f9;
+      padding: 0.6rem 1.4rem;
+      border-radius: 60px;
+      font-size: 1.6rem;
+      font-weight: 600;
+      min-width: 80px;
+      text-align: center;
+      transition: background 0.2s;
+    }
+    body.dark-mode .counter-box { background: #252b40; }
+
+    .theme-selector {
+      display: flex;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+    }
+    .theme-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 40px;
+      border: 2px solid transparent;
+      cursor: pointer;
+      transition: 0.1s;
+    }
+    .theme-btn:hover { transform: scale(1.08); }
+    .theme-btn.active { border-color: #3b82f6; box-shadow: 0 0 0 2px white; }
+
+    /* js hooks – no styling, only behaviour */
+    .js-theme-toggle, .js-counter, .js-reset {
+      /* only js hooks, no style */
+    }
+
+    /* responsive */
+    @media (min-width: 640px) {
+      .grid-2col { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 700px) {
+      .nav-links { display: none; }
+      .nav-wrapper .logo { width: 100%; }
+    }
+    /* small tweaks */
+    @media (max-width: 400px) {
+      .hero { flex-direction: column; align-items: flex-start; }
+      .footer { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <!-- header -->
+  <header class="hero">
+    <div>
+      <h1>⚡ INTERACTIVE<br>WEB ELEMENTS</h1>
+      <div style="display:flex; gap:0.3rem; flex-wrap:wrap; margin-top:0.2rem;">
+        <span class="chip" style="background:#2d3a5e; color:white;">DecodeLabs</span>
+        <span class="text-muted" style="color:#b0c4e8;">Project 3 · nervous system</span>
+      </div>
+    </div>
+    <div class="badge">🧠 JS · DOM</div>
+  </header>
+
+  <!-- navigation + interactive toolbar -->
+  <nav class="nav-wrapper">
+    <div class="logo">decode<span>labs</span></div>
+    <ul class="nav-links">
+      <li><a href="#">IPO</a></li>
+      <li><a href="#">DOM</a></li>
+      <li><a href="#">State</a></li>
+      <li><a href="#" style="background:#0f172a; color:white; padding:0.2rem 1.2rem; border-radius:40px;">Events</a></li>
+    </ul>
+    <div class="toolbar">
+      <!-- dark mode toggle - js hook -->
+      <button class="btn btn-primary js-theme-toggle" data-js="theme-toggle">🌙 Dark</button>
+    </div>
+  </nav>
+
+  <!-- main grid -->
+  <section class="grid-2col">
+
+    <!-- card: IPO + state -->
+    <div class="card">
+      <h3>🔁 Input · Process · Output</h3>
+      <p class="text-muted">Every interaction follows the IPO loop. Click the counter to see it in action.</p>
+      <div class="interactive-zone">
+        <button class="btn js-counter" data-js="counter">➕ Click me</button>
+        <span class="counter-box" id="counterDisplay" data-js="counter-display">0</span>
+        <button class="btn js-reset" data-js="reset">↺ Reset</button>
+      </div>
+      <div style="margin-top:0.8rem; display:flex; flex-wrap:wrap; gap:0.4rem;">
+        <span class="chip">📌 state: <span id="stateIndicator" data-js="state-indicator">idle</span></span>
+        <span class="chip">🔄 event listener</span>
+      </div>
+      <div class="code-block" style="margin-top:0.6rem;">
+        // IPO loop in action <br>
+        counter.addEventListener('click', () => { <br>
+        &nbsp; state++; <br>
+        &nbsp; render(); <br>
+        });
+      </div>
+    </div>
+
+    <!-- card: theme / dark mode + dynamic classes -->
+    <div class="card">
+      <h3>🎨 Dynamic Theme</h3>
+      <p class="text-muted">Toggle dark mode or pick a theme accent. <strong>classList.toggle()</strong> + CSS transitions.</p>
+      <div style="display:flex; flex-wrap:wrap; gap:1rem; align-items:center; margin:0.4rem 0;">
+        <button class="btn js-theme-toggle" data-js="theme-toggle-alt">🌓 Toggle dark</button>
+        <div class="theme-selector" data-js="theme-selector">
+          <button class="theme-btn" style="background:#3b82f6;" data-theme="blue" aria-label="blue"></button>
+          <button class="theme-btn" style="background:#10b981;" data-theme="green" aria-label="green"></button>
+          <button class="theme-btn" style="background:#f59e0b;" data-theme="amber" aria-label="amber"></button>
+          <button class="theme-btn" style="background:#ef4444;" data-theme="red" aria-label="red"></button>
+        </div>
+      </div>
+      <div class="flex-row">
+        <span class="chip">🌙 dark-mode class</span>
+        <span class="chip">🎯 js-prefix hooks</span>
+      </div>
+      <div style="background:#f1f5f9; padding:0.6rem 1rem; border-radius:1.2rem; margin-top:0.3rem; transition:background 0.2s;">
+        <span style="font-weight:500;">🧩 State persisted via localStorage</span>
+        <span style="display:block; font-size:0.8rem; color:#334155;">(theme preference saved)</span>
+      </div>
+    </div>
+
+    <!-- card: DOM manipulation -->
+    <div class="card">
+      <h3>🧬 DOM Manipulation</h3>
+      <p>Create & append nodes dynamically. Click to add a new element.</p>
+      <button class="btn js-add-item" data-js="add-item">➕ Add item</button>
+      <ul id="dynamicList" data-js="dynamic-list" style="margin-top:0.6rem; list-style:none; display:flex; flex-direction:column; gap:0.3rem;">
+        <li style="background:#f8fafc; padding:0.3rem 0.8rem; border-radius:30px;">✨ starter item</li>
+      </ul>
+      <div class="code-block" style="font-size:0.7rem;">
+        const li = document.createElement('li'); <br>
+        li.textContent = 'new item'; <br>
+        list.appendChild(li);
+      </div>
+    </div>
+
+    <!-- card: event listeners + thumbs -->
+    <div class="card">
+      <h3>👆 Sensory Receptors</h3>
+      <p>Clicks, hovers, focus – the browser listens.</p>
+      <div class="thumb-zone" style="display:flex; gap:0.8rem; flex-wrap:wrap;">
+        <div class="thumb-icon" data-js="clickable-icon">🖱️</div>
+        <div class="thumb-icon" data-js="hover-icon">👆</div>
+        <span class="chip" id="eventFeedback" data-js="event-feedback">waiting...</span>
+      </div>
+      <div style="display:flex; flex-wrap:wrap; gap:0.4rem; margin-top:0.4rem;">
+        <span class="chip">addEventListener</span>
+        <span class="chip">mouseenter</span>
+        <span class="chip">click</span>
+      </div>
+      <p class="text-muted" style="font-size:0.85rem; margin-top:0.3rem;">🔊 “The browser is in a state of constant vigilance.”</p>
+    </div>
+  </section>
+
+  <!-- footer -->
+  <footer class="footer">
+    <div>
+      <h3 style="color:white; margin:0;">THANK YOU</h3>
+      <div style="display:flex; gap:0.5rem; flex-wrap:wrap; margin-top:0.2rem;">
+        <span>📧 decodelabs.tech@gmail.com</span>
+        <span>📞 +91 89330 06408</span>
+      </div>
+    </div>
+    <div class="contact">
+      <span>🌐 www.decodelabs.tech</span>
+      <span>📍 Greater Lucknow, India</span>
+    </div>
+  </footer>
+
+  <div style="text-align:center; font-size:0.7rem; color:#7a7a8a; padding-top:0.5rem; border-top:1px solid #e2e8f0; margin-top:0.5rem;">
+    Batch 2026 · Powered by DecodeLabs · Project 3: Interactive Web Elements
+  </div>
+</div>
+
+<!-- JavaScript: clean, decoupled, using js-* hooks -->
+<script>
+  (function() {
+    "use strict";
+
+    // ----- state -----
+    let counter = 0;
+    let theme = localStorage.getItem('dl-theme') || 'light';
+
+    // ----- DOM refs (const, immutable) -----
+    const body = document.body;
+    const counterDisplay = document.querySelector('[data-js="counter-display"]');
+    const stateIndicator = document.querySelector('[data-js="state-indicator"]');
+    const dynamicList = document.querySelector('[data-js="dynamic-list"]');
+    const eventFeedback = document.querySelector('[data-js="event-feedback"]');
+    const clickableIcon = document.querySelector('[data-js="clickable-icon"]');
+    const hoverIcon = document.querySelector('[data-js="hover-icon"]');
+
+    // theme buttons
+    const themeBtns = document.querySelectorAll('[data-theme]');
+    const themeToggleBtns = document.querySelectorAll('.js-theme-toggle');
+
+    // ----- render / update UI -----
+    function renderCounter() {
+      if (counterDisplay) counterDisplay.textContent = counter;
+      if (stateIndicator) {
+        stateIndicator.textContent = counter === 0 ? 'idle' : counter > 5 ? 'active 🔥' : 'clicked';
+      }
+    }
+
+    // ----- dark mode + theme (class + localStorage) -----
+    function setTheme(mode) {
+      theme = mode;
+      localStorage.setItem('dl-theme', mode);
+      if (mode === 'dark') {
+        body.classList.add('dark-mode');
+      } else {
+        body.classList.remove('dark-mode');
+      }
+      // update toggle button text
+      themeToggleBtns.forEach(btn => {
+        btn.textContent = mode === 'dark' ? '☀️ Light' : '🌙 Dark';
+      });
+      // highlight theme picker (visual only)
+      themeBtns.forEach(b => b.classList.remove('active'));
+    }
+
+    function toggleTheme() {
+      setTheme(theme === 'dark' ? 'light' : 'dark');
+    }
+
+    // ----- init theme from storage -----
+    setTheme(theme);
+
+    // ----- event listeners (IPO) -----
+
+    // 1. counter: click -> process -> output
+    const counterBtn = document.querySelector('.js-counter');
+    if (counterBtn) {
+      counterBtn.addEventListener('click', function(e) {
+        counter++;
+        renderCounter();
+        // feedback
+        if (eventFeedback) eventFeedback.textContent = '➕ counter +1';
+      });
+    }
+
+    // reset counter
+    const resetBtn = document.querySelector('.js-reset');
+    if (resetBtn) {
+      resetBtn.addEventListener('click', function() {
+        counter = 0;
+        renderCounter();
+        if (eventFeedback) eventFeedback.textContent = '↺ reset';
+      });
+    }
+
+    // 2. theme toggles (multiple buttons)
+    themeToggleBtns.forEach(btn => {
+      btn.addEventListener('click', toggleTheme);
+    });
+
+    // 3. theme picker (accent colours – just visual demo, no real accent)
+    themeBtns.forEach(btn => {
+      btn.addEventListener('click', function(e) {
+        const color = this.dataset.theme;
+        // just for demo: change body border or something subtle
+        document.querySelector('.app').style.setProperty('--accent', color);
+        // visual feedback
+        themeBtns.forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        if (eventFeedback) eventFeedback.textContent = `🎨 accent: ${color}`;
+        // store preference
+        localStorage.setItem('dl-accent', color);
+      });
+    });
+
+    // 4. add item (DOM manipulation)
+    const addBtn = document.querySelector('.js-add-item');
+    if (addBtn && dynamicList) {
+      addBtn.addEventListener('click', function() {
+        const li = document.createElement('li');
+        const count = dynamicList.children.length + 1;
+        li.textContent = `✨ item ${count}`;
+        li.style.background = '#f1f5f9';
+        li.style.padding = '0.3rem 0.8rem';
+        li.style.borderRadius = '30px';
+        li.style.marginBottom = '0.2rem';
+        dynamicList.appendChild(li);
+        if (eventFeedback) eventFeedback.textContent = `📦 added item ${count}`;
+      });
+    }
+
+    // 5. clickable icon (feedback)
+    if (clickableIcon) {
+      clickableIcon.addEventListener('click', function() {
+        if (eventFeedback) eventFeedback.textContent = '🖱️ icon clicked!';
+        this.style.transform = 'scale(0.9)';
+        setTimeout(() => { this.style.transform = 'scale(1)'; }, 100);
+      });
+    }
+
+    // 6. hover icon (mouseenter)
+    if (hoverIcon) {
+      hoverIcon.addEventListener('mouseenter', function() {
+        if (eventFeedback) eventFeedback.textContent = '👆 hover detected';
+        this.style.background = '#b0c4f0';
+        setTimeout(() => { this.style.background = ''; }, 300);
+      });
+    }
+
+    // 7. extra: double-click demo on hero badge? not needed but clean.
+
+    // initial render
+    renderCounter();
+
+    // restore accent if any
+    const savedAccent = localStorage.getItem('dl-accent');
+    if (savedAccent) {
+      themeBtns.forEach(b => {
+        if (b.dataset.theme === savedAccent) {
+          b.classList.add('active');
+          document.querySelector('.app').style.setProperty('--accent', savedAccent);
+        }
+      });
+    }
+
+    console.log('🚀 Interactive Web Elements — IPO loop active');
+  })();
+</script>
+</body>
+</html>
